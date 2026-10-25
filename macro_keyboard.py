@@ -10,6 +10,7 @@ import sys
 import threading
 import time
 import tkinter as tk
+import winreg
 from ctypes import wintypes
 from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
@@ -37,6 +38,8 @@ WM_MOUSEWHEEL = 0x020A
 WM_SIZE = 0x0005
 WM_USER = 0x0400
 WM_TRAY_CALLBACK = WM_USER + 0x513
+STARTUP_REGISTRY_KEY = r"Software\Microsoft\Windows\CurrentVersion\Run"
+STARTUP_VALUE_NAME = "MacroKeys"
 NIM_ADD = 0x00000000
 NIM_MODIFY = 0x00000001
 NIM_DELETE = 0x00000002
@@ -186,6 +189,37 @@ def load_profiles() -> dict:
         except (OSError, json.JSONDecodeError):
             pass
     return {"version": 1, "profiles": [{"name": "Default", "mappings": []}]}
+
+
+def startup_command() -> str:
+    if getattr(sys, "frozen", False):
+        return f'"{Path(sys.executable).resolve()}" --startup'
+    pythonw = Path(sys.executable).with_name("pythonw.exe")
+    runner = pythonw if pythonw.exists() else Path(sys.executable)
+    return f'"{runner.resolve()}" "{Path(__file__).resolve()}" --startup'
+
+
+def is_startup_enabled() -> bool:
+    try:
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, STARTUP_REGISTRY_KEY,
+                            0, winreg.KEY_READ) as key:
+            command, _ = winreg.QueryValueEx(key, STARTUP_VALUE_NAME)
+        return bool(command)
+    except (FileNotFoundError, OSError):
+        return False
+
+
+def set_startup_enabled(enabled: bool) -> None:
+    if enabled:
+        with winreg.CreateKey(winreg.HKEY_CURRENT_USER, STARTUP_REGISTRY_KEY) as key:
+            winreg.SetValueEx(key, STARTUP_VALUE_NAME, 0, winreg.REG_SZ, startup_command())
+        return
+    try:
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, STARTUP_REGISTRY_KEY,
+                            0, winreg.KEY_SET_VALUE) as key:
+            winreg.DeleteValue(key, STARTUP_VALUE_NAME)
+    except FileNotFoundError:
+        pass
 
 
 def send_key(vk: int, key_up: bool = False) -> None:
@@ -445,6 +479,7 @@ class NativeTrayIcon:
 class MacroKeysApp:
     def __init__(self, root: tk.Tk):
         self.root = root
+        self.launched_at_startup = "--startup" in sys.argv[1:]
         self.root.title("MacroKeys — Universal Keyboard Macro")
         self.root.geometry("1440x850")
         self.root.minsize(800, 560)
@@ -485,6 +520,8 @@ class MacroKeysApp:
         except Exception as exc:
             self.status_var.set("System tray unavailable")
             messagebox.showerror("System tray", f"Could not create tray icon:\n{exc}", parent=self.root)
+        if self.launched_at_startup and self.tray is not None:
+            self.root.after(700, self.minimize_to_tray)
 
     def _style(self):
         style = ttk.Style()
@@ -539,6 +576,9 @@ class MacroKeysApp:
         ttk.Button(home_profile, text="＋ নতুন প্রোফাইল", command=self.add_profile).pack(side="left")
         ttk.Label(home_profile, text="নিচের তালিকা থেকে ম্যাক্রো বেছে কী সেট করুন অথবা মুছে ফেলুন।",
                   style="Muted.TLabel").pack(side="left", padx=14)
+        self.startup_var = tk.BooleanVar(value=is_startup_enabled())
+        ttk.Checkbutton(home_profile, text="কম্পিউটার চালুর সাথে চালু",
+                        variable=self.startup_var, command=self._toggle_startup).pack(side="right")
 
         work = ttk.Frame(home)
         work.pack(fill="both", expand=True, pady=(12, 0))
@@ -1580,6 +1620,21 @@ class MacroKeysApp:
         self.active = True
         self._sync_macro_controls()
         self.status_var.set("Running · press Stop macros to pass keys through")
+
+    def _toggle_startup(self):
+        enabled = bool(self.startup_var.get())
+        try:
+            set_startup_enabled(enabled)
+        except OSError as exc:
+            self.startup_var.set(not enabled)
+            messagebox.showerror(
+                "Windows startup", f"Startup setting could not be changed:\n{exc}", parent=self.root,
+            )
+            return
+        self.home_status_var.set(
+            "Windows চালুর সাথে MacroKeys চালু হবে।" if enabled
+            else "Windows চালুর সময় MacroKeys অটো-রান বন্ধ করা হয়েছে।"
+        )
 
     def deactivate(self):
         self.active = False

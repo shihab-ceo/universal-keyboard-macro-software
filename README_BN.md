@@ -10,6 +10,7 @@ Windows-এর সাধারণ কীবোর্ডকে শর্টকা
 4. **সেভ করে চালানোর key বাছুন** চাপার পর পূর্ণ keyboard layout-এ target key click করুন—সঙ্গে সঙ্গে assign হবে এবং macro engine চালু হবে। একই macro একাধিক trigger key-তে বসাতে চাইলে প্রতিটি key-তে আলাদা করে click করুন। চাইলে ম্যাক্রো টেনে key-এর উপর ছাড়ুন।
 5. সেভ করা macro-গুলো প্রথম পাতার তালিকায় দেখা যাবে; প্রতিটি ম্যাক্রোর সব trigger key-ও তালিকায় দেখাবে। তালিকা থেকে macro বেছে আরও key যোগ করতে বা মুছতে পারবেন। **Advanced** পাতায় পুরোনো action editor, recording, import/export আছে।
 6. বরাদ্দ করা trigger key-গুলো অ্যাপ চালুর পর নিজে থেকেই সক্রিয় হবে। সাময়িকভাবে থামাতে মূল screen-এর উপরের **ম্যাক্রো বন্ধ করুন** বোতাম চাপুন; আবার চালাতে **ম্যাক্রো চালু করুন** চাপুন।
+7. Windows startup থেকে MacroKeys চালাতে **কম্পিউটার চালুর সাথে চালু** checkbox দিন। বন্ধ করতে checkbox সরিয়ে দিন। Startup থেকে শুরু হলে অ্যাপটি system tray-তে মিনিমাইজ হবে।
 
 Window-এর **X** বা minimize করলে অ্যাপটি system tray-তে লুকায়; tray icon-এ left-click করলে window ফেরে, right-click করলে Open/Pause/Resume/Exit menu আসে। Windows 11 icon-টি `^` hidden-icons overflow-এ রাখতে পারে।
 
