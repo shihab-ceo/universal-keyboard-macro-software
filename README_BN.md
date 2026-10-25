@@ -42,6 +42,7 @@ REPEAT:3
 - Low-level hook সব কীবোর্ড event দেখে; নির্দিষ্ট USB/Wireless device আলাদা করে বাছাই করে না। Per-device শনাক্তকরণের জন্য Raw Input-ভিত্তিক সংস্করণ প্রয়োজন।
 - এই সংস্করণে Windows startup, dark/light switch, clipboard paste এবং toggle/hold loop mode নেই। `MOVE:x,y` action দিয়ে নির্দিষ্ট screen coordinate-এ pointer সরানো যায়, তবে recorder mouse movement ধরে না।
 - Macro trigger key আটকানো হয়; অন্য কীগুলো সাধারণভাবে pass-through হয়। Injected macro output hook থেকে বাদ থাকে, যাতে macro নিজের output আবার trigger না করে।
+- একটি trigger key ধরে রাখলে macro একবারই চলে; key ছেড়ে আবার চাপলে পরেরবার চলবে।
 - Shortcut পাঠানো app-এর অনুমতি/সুরক্ষা সীমা অতিক্রম করে না। কিছু elevated বা protected app-এ hook/injection কাজ নাও করতে পারে।
 - এই prototype Python-এ লেখা, SRS-এ সুপারিশ করা C#/.NET বা C++ নয়। এই কম্পিউটারে .NET SDK নেই; Python runtime আছে। তাই <5 ms latency এবং background-এ <50 MB RAM লক্ষ্য এখনো মাপা বা নিশ্চিত করা হয়নি।
 

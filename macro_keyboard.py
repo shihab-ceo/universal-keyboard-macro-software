@@ -1473,6 +1473,10 @@ class MacroKeysApp:
                 self.consumed.add(vk)
             self.events.put(("wizard_record_update",))
             return True
+        # Low-level hooks receive repeated key-down events while a physical key
+        # is held. A mapped trigger should fire once per press, until its key-up.
+        if down and vk in self.consumed:
+            return True
         if up and vk in self.consumed:
             self.consumed.discard(vk)
             return True
